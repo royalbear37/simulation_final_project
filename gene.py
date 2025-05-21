@@ -4,8 +4,8 @@ from simulation import total_idle_time
 # ==== 參數設定 ====
 NUM_JOB = 3              # 分配給三區的員工數（例如 [3, 4, 4]）
 
-NUM_ITERATION = 100
-NUM_CHROME = 50
+NUM_ITERATION = 20
+NUM_CHROME = 20
 NUM_BIT = NUM_JOB
 
 Pc = 0.75
@@ -27,12 +27,12 @@ def initPop():
             p.append(x)
     return p
 
-def fitFunc(x, sim_time):
+def fitFunc(x, sim_time, dispatch_rule):
     # 適應度為 -idle_time（越小越好）
-    return -total_idle_time(list(x), sim_time)
+    return -total_idle_time(list(x), sim_time, dispatch_rule=dispatch_rule)
 
-def evaluatePop(p, sim_time):
-    return [fitFunc(ind, sim_time) for ind in p]
+def evaluatePop(p, sim_time, dispatch_rule):
+    return [fitFunc(ind, sim_time, dispatch_rule) for ind in p]
 
 def selection(p, p_fit):
     selected = []
@@ -84,12 +84,12 @@ def replace(p, p_fit, a, a_fit):
     return merged[:NUM_CHROME], merged_fit[:NUM_CHROME]
 
 
-def run_gene(total_staff, sim_time):
+def run_gene(total_staff, sim_time, dispatch_rule):
     global TOTAL_STAFF
     TOTAL_STAFF = total_staff
 
     pop = initPop()
-    pop_fit = evaluatePop(pop, sim_time)
+    pop_fit = evaluatePop(pop, sim_time, dispatch_rule)
 
     best_outputs = [np.max(pop_fit)]
     mean_outputs = [np.mean(pop_fit)]
@@ -98,7 +98,7 @@ def run_gene(total_staff, sim_time):
         parent = selection(pop, pop_fit)
         offspring = crossover_uniform(parent)
         mutation(offspring)
-        offspring_fit = evaluatePop(offspring, sim_time)
+        offspring_fit = evaluatePop(offspring, sim_time, dispatch_rule)
         pop, pop_fit = replace(pop, pop_fit, offspring, offspring_fit)
 
         best_outputs.append(np.max(pop_fit))
