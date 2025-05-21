@@ -103,5 +103,5 @@ def run_gene(total_staff, sim_time, dispatch_rule):
 
         best_outputs.append(np.max(pop_fit))
         mean_outputs.append(np.mean(pop_fit))
-
-    return pop[0], -pop_fit[0]
+    best = pop[0].tolist()
+    return best, -pop_fit[0]
