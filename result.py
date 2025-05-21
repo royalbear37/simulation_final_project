@@ -7,7 +7,7 @@ from simulation import simulate_best_allocation_events
 def pretty_priority_align(names, priorities):
     # 每個 array 一行顯示，區域名稱置中
     for name, arr in zip(names, priorities):
-        print(f"{name:^5}區域的優先順序：[{', '.join(str(x) for x in arr)}]")
+        print(f"{name:^5}區域的順序編號：[{', '.join(str(x) for x in arr)}]")
 
 # 用法不變
 
