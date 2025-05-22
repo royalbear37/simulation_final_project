@@ -72,20 +72,10 @@ def simulate_idle_time(area_machines, num_staff, simulation_time, dispatch_rule=
             continue
 
         if evt == 'done':
-            m = machine_status[mname]
-            if staff_available > 0:
-                staff_available -= 1
-                load_done = now + m['load']
-                # 在 'done' 事件安排 start_proc 事件時也要記錄
-                if load_done <= simulation_time:
-                    heapq.heappush(event_queue, (load_done, 'start_proc', mname))
-                    simulate_idle_time.load_start_dict[mname] = now  # 記錄上料開始時間
-                else:
-                    idle_time_total += simulation_time - now
-            else:
-                # 避免重複進 waiting_queue
-                if mname not in simulate_idle_time.wait_start_dict:
-                    waiting_queue.append((now, mname))
+            # 全部都直接丟進 waiting queue，避免重複
+            if mname not in simulate_idle_time.wait_start_dict:
+                waiting_queue.append((now, mname))
+            assign_waiting(now)
 
         # 在 'start_proc' 事件時，取出 assign 時間
         elif evt == 'start_proc':

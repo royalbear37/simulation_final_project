@@ -64,15 +64,10 @@ def _simulate_assign_events(area_machines, num_staff, simulation_time, dispatch_
 
         if evt == 'done':
             m = machine_status[mname]
-            if staff_available > 0:
-                staff_available -= 1
-                load_done = now + m['load']
-                if load_done <= simulation_time:
-                    heapq.heappush(event_queue, (load_done, 'start_proc', mname))
-                    load_start_dict[mname] = now
-            else:
-                if mname not in wait_start_dict:
-                    waiting_queue.append((now, mname))
+            if mname not in wait_start_dict:
+               waiting_queue.append((now, mname))
+            assign_waiting(now)
+
 
         elif evt == 'start_proc':
             m = machine_status[mname]

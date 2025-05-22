@@ -7,8 +7,8 @@ if __name__ == "__main__":
     # dispatch_rule = input("請輸入派工規則（FIFO/LIFO/SPTF/GA）：").strip()
 
     result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='FIFO')
-    result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='LIFO')
-    result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='SPTF')
-    result(total_staff, sim_time, dispatch_rule='FIFO')
-    result(total_staff, sim_time, dispatch_rule='LIFO')
-    result(total_staff, sim_time, dispatch_rule='SPTF')
+    # result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='LIFO')
+    # result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='SPTF')
+    # result(total_staff, sim_time, dispatch_rule='FIFO')
+    # result(total_staff, sim_time, dispatch_rule='LIFO')
+    # result(total_staff, sim_time, dispatch_rule='SPTF')

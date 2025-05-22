@@ -57,8 +57,8 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         best_allocation, sim_time, dispatch_rule=dispatch_rule,
         ga_priority_list=ga_priority_list if dispatch_rule.upper() == 'GA' else None
     )
-    # print("=== 各區域分配事件 ===")
-    # for area, evlist in events.items():
-    #     print(f"{area:<5} 區域：")
-    #     for e in evlist:
-    #         print(f"  時間 {e['assign_time']:>3}: 機台 {e['machine']:<6}，等待時間 {e['wait_time']:>3}")
+    print("=== 各區域分配事件 ===")
+    for area, evlist in events.items():
+        print(f"{area:<5} 區域：")
+        for e in evlist:
+            print(f"  時間 {e['assign_time']:>3}: 機台 {e['machine']:<6}，等待時間 {e['wait_time']:>3}")
