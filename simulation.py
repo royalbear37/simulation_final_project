@@ -1,6 +1,5 @@
 import heapq
 from collections import deque
-from event import _simulate_assign_events
 
 def simulate_idle_time(area_machines, num_staff, simulation_time, dispatch_rule='fifo', ga_priority=None):
     """
@@ -71,35 +70,39 @@ def simulate_idle_time(area_machines, num_staff, simulation_time, dispatch_rule=
         if now > simulation_time:
             continue
 
-        if evt == 'done':
-            # 全部都直接丟進 waiting queue，避免重複
-            if mname not in simulate_idle_time.wait_start_dict:
-                waiting_queue.append((now, mname))
-            assign_waiting(now)
+        # 暫存當前時間所有事件
+        current_events = [(now, evt, mname)]
+        while event_queue and event_queue[0][0] == now:
+            current_events.append(heapq.heappop(event_queue))
 
-        # 在 'start_proc' 事件時，取出 assign 時間
-        elif evt == 'start_proc':
-            m = machine_status[mname]
-            assign_time = simulate_idle_time.load_start_dict.pop(mname, now)
-            # 印出分配資訊
-            if hasattr(simulate_idle_time, 'wait_start_dict') and mname in simulate_idle_time.wait_start_dict:
-                wait_start = simulate_idle_time.wait_start_dict.pop(mname)
-                wait_time = max(0, assign_time - wait_start)  # 用 assign_time
-            #     print(f"Assigning {mname} to staff at time {assign_time}")
-            #     print(f"Machine {mname} waiting time: {wait_time}")
-            # else:
-            #     print(f"Assigning {mname} to staff at time {assign_time}")
-            #     print(f"Machine {mname} waiting time: 0")
-            proc_done = now + m['proc']
-            if proc_done <= simulation_time:
-                heapq.heappush(event_queue, (proc_done, 'done', mname))
-            staff_available += 1
-            assign_waiting(now)
+        for _, evt, mname in current_events:
+            if evt == 'done':
+                if mname not in simulate_idle_time.wait_start_dict:
+                    waiting_queue.append((now, mname))
+            elif evt == 'start_proc':
+                m = machine_status[mname]
+                assign_time = simulate_idle_time.load_start_dict.pop(mname, now)
+                if hasattr(simulate_idle_time, 'wait_start_dict') and mname in simulate_idle_time.wait_start_dict:
+                    wait_start = simulate_idle_time.wait_start_dict.pop(mname)
+                    wait_time = max(0, assign_time - wait_start)
+                proc_done = now + m['proc']
+                if proc_done <= simulation_time:
+                    heapq.heappush(event_queue, (proc_done, 'done', mname))
+                staff_available += 1
+
+        # 在處理完當前時間點所有事件後，再做一次 assign
+        assign_waiting(now)
 
     return idle_time_total
 
 
 # ========== 區域與機台設定 ==========
+
+#測試用 簡單易讀
+# ETCH_machines = [(f"DA_{i}", 17, 3) for i in range(1, 6)]
+# PHOTO_machines = [(f"DB_{i}", 17, 3) for i in range(1, 5)]
+# TF_machines = [(f"DU_{i}", 60, 4) for i in range(1, 6)]
+
 
 ETCH_machines = [("PR_1", 60, 3), ("PR_2", 60, 3)] + \
     [(f"DA_{i}", 17, 3) for i in range(1, 9)] + \
@@ -126,15 +129,5 @@ def total_idle_time(allocation, sim_time, dispatch_rule='FIFO', ga_priority_list
     e_idle = simulate_idle_time(ETCH_machines, allocation[0], sim_time, dispatch_rule=dispatch_rule, ga_priority=e_priority)
     p_idle = simulate_idle_time(PHOTO_machines, allocation[1], sim_time, dispatch_rule=dispatch_rule, ga_priority=p_priority)
     t_idle = simulate_idle_time(TF_machines, allocation[2], sim_time, dispatch_rule=dispatch_rule, ga_priority=t_priority)
-    # print("="*40)
-    # allocation = [int(x) for x in allocation]
-    # print(f"Allocation: {allocation}")
-    # print(f"Dispatch rule: {dispatch_rule}")
-    # if ga_priority_list is not None:
-    #     print(f"GA priority: {ga_priority_list}")
-    # print(f"Idle times: ETCH={e_idle}, PHOTO={p_idle}, TF={t_idle}")
-    # print(f"Total idle time: {e_idle + p_idle + t_idle}")
-    # print("="*40)
+    
     return e_idle + p_idle + t_idle
-
-

@@ -5,7 +5,6 @@ def _simulate_assign_events(area_machines, num_staff, simulation_time, dispatch_
     """
     只回傳 assign events，不印也不計算 idle time
     """
-
     from simulation import ETCH_machines, PHOTO_machines, TF_machines
 
     wait_start_dict = {}
@@ -55,39 +54,43 @@ def _simulate_assign_events(area_machines, num_staff, simulation_time, dispatch_
             if now + load_time <= simulation_time:
                 heapq.heappush(event_queue, (now + load_time, 'start_proc', wait_mname))
                 load_start_dict[wait_mname] = now
-            # 不記錄 idle time
 
+    # === 改這裡：處理同一時間的事件 ===
     while event_queue:
         now, evt, mname = heapq.heappop(event_queue)
         if now > simulation_time:
             continue
 
-        if evt == 'done':
-            m = machine_status[mname]
-            if mname not in wait_start_dict:
-               waiting_queue.append((now, mname))
-            assign_waiting(now)
+        current_events = [(now, evt, mname)]
+        while event_queue and event_queue[0][0] == now:
+            current_events.append(heapq.heappop(event_queue))
 
+        for _, evt, mname in current_events:
+            if evt == 'done':
+                if mname not in wait_start_dict:
+                    waiting_queue.append((now, mname))
 
-        elif evt == 'start_proc':
-            m = machine_status[mname]
-            assign_time = load_start_dict.pop(mname, now)
-            if mname in wait_start_dict:
-                wait_start = wait_start_dict.pop(mname)
-                wait_time = max(0, assign_time - wait_start)
-            else:
-                wait_start = assign_time
-                wait_time = 0
-            assign_events.append({
-                'assign_time': assign_time,
-                'machine': mname,
-                'wait_time': wait_time
-            })
-            staff_available += 1
-            proc_done = now + m['proc']
-            if proc_done <= simulation_time:
-                heapq.heappush(event_queue, (proc_done, 'done', mname))
-            assign_waiting(now)
+            elif evt == 'start_proc':
+                m = machine_status[mname]
+                assign_time = load_start_dict.pop(mname, now)
+                if mname in wait_start_dict:
+                    wait_start = wait_start_dict.pop(mname)
+                    wait_time = max(0, assign_time - wait_start)
+                else:
+                    wait_start = assign_time
+                    wait_time = 0
+                assign_events.append({
+                    'assign_time': assign_time,
+                    'machine': mname,
+                    'wait_time': wait_time
+                })
+                staff_available += 1
+                proc_done = now + m['proc']
+                if proc_done <= simulation_time:
+                    heapq.heappush(event_queue, (proc_done, 'done', mname))
+
+        # 同一時間點統一安排
+        assign_waiting(now)
 
     return assign_events
 
@@ -109,4 +112,5 @@ def simulate_best_allocation_events(allocation, sim_time, dispatch_rule='FIFO', 
     events['ETCH'] = _simulate_assign_events(ETCH_machines, allocation[0], sim_time, dispatch_rule, e_priority)
     events['PHOTO'] = _simulate_assign_events(PHOTO_machines, allocation[1], sim_time, dispatch_rule, p_priority)
     events['TF'] = _simulate_assign_events(TF_machines, allocation[2], sim_time, dispatch_rule, t_priority)
+    
     return events

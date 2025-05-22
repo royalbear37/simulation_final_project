@@ -1,5 +1,6 @@
 from gene import run_gene
 from event import simulate_best_allocation_events
+from simulation import simulate_idle_time
 
 
 
@@ -30,12 +31,11 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         e_staff, p_staff, t_staff = best_allocation
 
         # 步驟4：用 best_allocation + ga_priority_list 計算 idle time
-        from simulation import simulate_idle_time
         e_idle = simulate_idle_time(ETCH_machines, e_staff, sim_time, dispatch_rule='GA', ga_priority=e_priority)
         p_idle = simulate_idle_time(PHOTO_machines, p_staff, sim_time, dispatch_rule='GA', ga_priority=p_priority)
         t_idle = simulate_idle_time(TF_machines, t_staff, sim_time, dispatch_rule='GA', ga_priority=t_priority)
         total_idle = e_idle + p_idle + t_idle
-
+        #print各種dispatch_rule的結果
         print("="*40)
         print(f"dispatch_rule: {dispatch_rule.upper()}")
         print(f"ga_replacement: {ga_replacement.upper()}")
@@ -47,18 +47,26 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
     else:
         print("="*40)
         best_allocation, idle = run_gene(total_staff, sim_time, dispatch_rule)
+        e_staff, p_staff, t_staff = best_allocation
         ga_priority_list = None
+        from dispatch_ga import ETCH_machines, PHOTO_machines, TF_machines
+        e_idle = simulate_idle_time(ETCH_machines, e_staff, sim_time, dispatch_rule=dispatch_rule)
+        p_idle = simulate_idle_time(PHOTO_machines, p_staff, sim_time, dispatch_rule=dispatch_rule)
+        t_idle = simulate_idle_time(TF_machines, t_staff, sim_time, dispatch_rule=dispatch_rule)
         print(f"dispatch_rule: {dispatch_rule.upper()}")
         print(f"最佳分配為：{best_allocation}")
+        print(f"ETCH 區域的閒置時間：{e_idle}, PHOTO 區域的閒置時間：{p_idle}, TF 區域的閒置時間：{t_idle}")
         print(f"總閒置時間：{idle}")
         print("="*40)
 
-    events = simulate_best_allocation_events(
-        best_allocation, sim_time, dispatch_rule=dispatch_rule,
-        ga_priority_list=ga_priority_list if dispatch_rule.upper() == 'GA' else None
-    )
-    print("=== 各區域分配事件 ===")
-    for area, evlist in events.items():
-        print(f"{area:<5} 區域：")
-        for e in evlist:
-            print(f"  時間 {e['assign_time']:>3}: 機台 {e['machine']:<6}，等待時間 {e['wait_time']:>3}")
+
+    # 顯示各區域的分配事件
+    # events = simulate_best_allocation_events(
+    #     best_allocation, sim_time, dispatch_rule=dispatch_rule,
+    #     ga_priority_list=ga_priority_list if dispatch_rule.upper() == 'GA' else None
+    # )
+    # print("=== 各區域分配事件 ===")
+    # for area, evlist in events.items():
+    #     print(f"{area:<5} 區域：")
+    #     for e in evlist:
+    #         print(f"  時間 {e['assign_time']:>3}: 機台 {e['machine']:<6}，等待時間 {e['wait_time']:>3}")

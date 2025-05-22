@@ -49,7 +49,11 @@ def crossover_uniform(p):
         raw1 = np.where(mask, p[j], p[k])
         raw2 = np.where(mask, p[k], p[j])
         for raw in [raw1, raw2]:
-            ratio = raw / np.sum(raw)
+            # 防呆：raw 全為 0 時給平均分配
+            if np.sum(raw) == 0:
+                ratio = np.ones_like(raw) / len(raw)
+            else:
+                ratio = raw / np.sum(raw)
             adjusted = np.floor(ratio * TOTAL_STAFF).astype(int)
             diff = TOTAL_STAFF - np.sum(adjusted)
             while diff != 0:
