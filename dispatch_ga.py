@@ -1,7 +1,7 @@
 import numpy as np
 from simulation import simulate_idle_time, ETCH_machines, PHOTO_machines, TF_machines
 
-def run_ga_for_area(area_machines, num_staff, sim_time, num_chrome=50, num_iter=30, Pc=0.75, Pm=0.05):
+def run_ga_for_area(area_machines, num_staff, sim_time, num_chrome=60, num_iter=100, Pc=0.75, Pm=0.05):
     """
     對指定機台區域執行 GA 最佳化，最小化 idle time。
     - area_machines: List of (name, proc_time, load_time)
@@ -70,14 +70,14 @@ def run_ga_for_area(area_machines, num_staff, sim_time, num_chrome=50, num_iter=
         mutation(offspring)
         offspring_fit = evaluatePop(offspring)
         pop, pop_fit = replace(pop, pop_fit, offspring, offspring_fit)
-        print(pop[0])
-        print(f"[GA] Iter {i+1:3d} | Best idle = {-pop_fit[0]}")
+        # print(pop[0])
+        # print(f"[GA] Iter {i+1:3d} | Best idle = {-pop_fit[0]}")
 
     best = pop[0]
     best_idle = -fitFunc(best)
 
-    print(f"[GA] Best priority = {best.tolist()}")
-    print(f"[GA] Best idle = {best_idle}")
+    # print(f"[GA] Best priority = {best.tolist()}")
+    # print(f"[GA] Best idle = {best_idle}")
     return best.tolist(), best_idle
 
 
