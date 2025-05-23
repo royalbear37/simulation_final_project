@@ -1,6 +1,7 @@
 import heapq
 from collections import deque
 
+
 def _simulate_assign_events(area_machines, num_staff, simulation_time, dispatch_rule, ga_priority):
     """
     只回傳 assign events，不印也不計算 idle time

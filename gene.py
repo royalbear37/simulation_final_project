@@ -4,11 +4,10 @@ from simulation import total_idle_time
 # ==== 參數設定 ====
 NUM_JOB = 3              # 分配給三區的員工數（例如 [3, 4, 4]）
 
-NUM_ITERATION = 100
-NUM_CHROME = 30
+NUM_ITERATION = 20
+NUM_CHROME = 15
 NUM_BIT = NUM_JOB
-
-Pc = 0.75
+Pc = 0.65
 Pm = 0.2
 
 NUM_PARENT = NUM_CHROME

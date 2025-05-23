@@ -35,17 +35,25 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         p_idle = simulate_idle_time(PHOTO_machines, p_staff, sim_time, dispatch_rule='GA', ga_priority=p_priority)
         t_idle = simulate_idle_time(TF_machines, t_staff, sim_time, dispatch_rule='GA', ga_priority=t_priority)
         total_idle = e_idle + p_idle + t_idle
-        #print各種dispatch_rule的結果
-        print("="*40)
-        print(f"dispatch_rule: {dispatch_rule.upper()}")
-        print(f"ga_replacement: {ga_replacement.upper()}")
-        print(f"最佳分配為：{best_allocation}")
-        pretty_priority_align(["ETCH", "PHOTO", "TF"], [e_priority, p_priority, t_priority])
-        print(f"ETCH 區域的閒置時間：{e_idle}, PHOTO 區域的閒置時間：{p_idle}, TF 區域的閒置時間：{t_idle}")
-        print(f"總閒置時間：{total_idle}")
-        print("="*40)
+        # print各種dispatch_rule的結果
+        # print("="*40)
+        # print(f"dispatch_rule: {dispatch_rule.upper()}")
+        # print(f"ga_replacement: {ga_replacement.upper()}")
+        # print(f"最佳分配為：{best_allocation}")
+        # pretty_priority_align(["ETCH", "PHOTO", "TF"], [e_priority, p_priority, t_priority])
+        # print(f"ETCH 區域的閒置時間：{e_idle}, PHOTO 區域的閒置時間：{p_idle}, TF 區域的閒置時間：{t_idle}")
+        # print(f"總閒置時間：{total_idle}")
+        # print("="*40)
+        return {
+            "dispatch_rule": dispatch_rule.upper(),
+            "ga_replacement": ga_replacement.upper() if ga_replacement else None,
+            "ETCH": {"staff": e_staff, "idle_time": e_idle},
+            "PHOTO": {"staff": p_staff, "idle_time": p_idle},
+            "TF": {"staff": t_staff, "idle_time": t_idle},
+            "total_idle": total_idle,
+            "allocation": best_allocation
+        }
     else:
-        print("="*40)
         best_allocation, idle = run_gene(total_staff, sim_time, dispatch_rule)
         e_staff, p_staff, t_staff = best_allocation
         ga_priority_list = None
@@ -53,20 +61,87 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         e_idle = simulate_idle_time(ETCH_machines, e_staff, sim_time, dispatch_rule=dispatch_rule)
         p_idle = simulate_idle_time(PHOTO_machines, p_staff, sim_time, dispatch_rule=dispatch_rule)
         t_idle = simulate_idle_time(TF_machines, t_staff, sim_time, dispatch_rule=dispatch_rule)
-        print(f"dispatch_rule: {dispatch_rule.upper()}")
-        print(f"最佳分配為：{best_allocation}")
-        print(f"ETCH 區域的閒置時間：{e_idle}, PHOTO 區域的閒置時間：{p_idle}, TF 區域的閒置時間：{t_idle}")
-        print(f"總閒置時間：{idle}")
-        print("="*40)
+        # print各種dispatch_rule的結果
+        # print("="*40)
+        # print(f"dispatch_rule: {dispatch_rule.upper()}")
+        # print(f"最佳分配為：{best_allocation}")
+        # print(f"ETCH 區域的閒置時間：{e_idle}, PHOTO 區域的閒置時間：{p_idle}, TF 區域的閒置時間：{t_idle}")
+        # print(f"總閒置時間：{idle}")
+        # print("="*40)
+
+        # 顯示各區域的分配事件
+        # events = simulate_best_allocation_events(
+        #     best_allocation, sim_time, dispatch_rule=dispatch_rule,
+        #     ga_priority_list=ga_priority_list if dispatch_rule.upper() == 'GA' else None
+        # )
+        # print("=== 各區域分配事件 ===")
+        # for area, evlist in events.items():
+        #     print(f"{area:<5} 區域：")
+        #     for e in evlist:
+        #         print(f"  時間 {e['assign_time']:>3}: 機台 {e['machine']:<6}，等待時間 {e['wait_time']:>3}")
+        return {
+            "dispatch_rule": dispatch_rule.upper(),
+            "ga_replacement": None,
+            "ETCH": {"staff": e_staff, "idle_time": e_idle},
+            "PHOTO": {"staff": p_staff, "idle_time": p_idle},
+            "TF": {"staff": t_staff, "idle_time": t_idle},
+            "total_idle": idle,
+            "allocation": best_allocation
+        }
 
 
-    # 顯示各區域的分配事件
-    # events = simulate_best_allocation_events(
-    #     best_allocation, sim_time, dispatch_rule=dispatch_rule,
-    #     ga_priority_list=ga_priority_list if dispatch_rule.upper() == 'GA' else None
-    # )
-    # print("=== 各區域分配事件 ===")
-    # for area, evlist in events.items():
-    #     print(f"{area:<5} 區域：")
-    #     for e in evlist:
-    #         print(f"  時間 {e['assign_time']:>3}: 機台 {e['machine']:<6}，等待時間 {e['wait_time']:>3}")
+
+
+def compare_results_by_area(results):
+    """
+    results: List[result() 回傳的 dict]
+    回傳每區域 idle time 最小的那個 result（只要該區 staff 數一樣即可比）
+    若三區都沒有人數一樣，則回傳總 idle time 最小的那個 result
+    """
+    areas = ['ETCH', 'PHOTO', 'TF']
+    best = {}
+    found = False
+
+    for area in areas:
+        # 找出所有該區 staff 數一樣的 result
+        staff_to_results = {}
+        for res in results:
+            staff = res[area]['staff']
+            staff_to_results.setdefault(staff, []).append(res)
+        # 如果有超過一個 result staff 數一樣，挑 idle time 最小的
+        best_idle = None
+        best_res = None
+        for staff, res_list in staff_to_results.items():
+            if len(res_list) > 1:
+                found = True
+                min_res = min(res_list, key=lambda x: x[area]['idle_time'])
+                if (best_idle is None) or (min_res[area]['idle_time'] < best_idle):
+                    best_idle = min_res[area]['idle_time']
+                    best_res = min_res
+        if best_res:
+            best[area] = {
+                "dispatch_rule": best_res['dispatch_rule'],
+                "ga_replacement": best_res.get('ga_replacement', None),
+                "staff": best_res[area]['staff'],
+                "idle_time": best_res[area]['idle_time']
+            }
+        else:
+            best[area] = None
+
+    # 如果三區都沒有 staff 一樣的，就回傳總 idle time 最小的那個
+    if not found:
+        min_res = min(results, key=lambda x: x['total_idle'])
+        for area in areas:
+            best[area] = {
+                "dispatch_rule": min_res['dispatch_rule'],
+                "ga_replacement": min_res.get('ga_replacement', None),
+                "staff": min_res[area]['staff'],
+                "idle_time": min_res[area]['idle_time']
+            }
+        best['total_idle'] = min_res['total_idle']
+        best['allocation'] = min_res['allocation']
+        best['msg'] = "三區都沒有人數一樣，回傳總 idle time 最小的結果"
+    else:
+        # 也可以加總 idle time
+        best['total_idle'] = sum(b['idle_time'] for b in best.values() if b)
+    return best
