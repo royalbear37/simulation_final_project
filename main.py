@@ -1,23 +1,53 @@
 # main.py
+from machine import query2
 from result import result, compare_results_by_area 
 
 if __name__ == "__main__":
-    total_staff = int(input("請輸入總員工人數："))
-    sim_time = int(input("請輸入模擬時間（分鐘）："))
-    # dispatch_rule = input("請輸入派工規則（FIFO/LIFO/SPTF/GA）：").strip()
+    
+    columns = [
+        "instance",
+        "average_idle_time",
+        "staff_in_area1",
+        "staff_in_area2",
+        "staff_in_area3",
+        "dispatch_in_area1",
+        "dispatch_in_area2",
+        "dispatch_in_area3",
+    ]
 
-    # 取得多個 rule 的 result
-    res1 = result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='FIFO')
-    res2 = result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='LIFO')
-    res3 = result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='SPTF')
-    res4 = result(total_staff, sim_time, dispatch_rule='FIFO')
-    res5 = result(total_staff, sim_time, dispatch_rule='LIFO')
-    res6 = result(total_staff, sim_time, dispatch_rule='SPTF')
+    output_rows = []
 
-    # 組成 list
-    results = [res1, res2, res3, res4, res5, res6]
+    for row in query2:
+        instance = row[0]
+        total_staff = int(row[1])
+        sim_time = int(row[2]) // 60  # 轉成分鐘
 
-    # 丟進比較函式
-    best = compare_results_by_area(results)
+        # 跑所有規則
+        res1 = result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='FIFO')
+        res2 = result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='LIFO')
+        res3 = result(total_staff, sim_time, dispatch_rule='GA', ga_replacement='SPTF')
+        res4 = result(total_staff, sim_time, dispatch_rule='FIFO')
+        res5 = result(total_staff, sim_time, dispatch_rule='LIFO')
+        res6 = result(total_staff, sim_time, dispatch_rule='SPTF')
 
-    print(best)
+        results = [res1, res2, res3, res4, res5, res6]
+        best = compare_results_by_area(results)
+
+        output_row = [
+            instance,
+            best.get("total_idle", ""),                       # average_idle_time
+            best["ETCH"]["staff"],                            # staff_in_area1
+            best["PHOTO"]["staff"],                           # staff_in_area2
+            best["TF"]["staff"],                              # staff_in_area3           
+            best["ETCH"]["dispatch_rule"],     # dispatch_in_area1               
+            best["TF"]["dispatch_rule"],      # dispatch_in_area2               
+            best["PHOTO"]["dispatch_rule"],    # dispatch_in_area3                                      
+        ]
+        output_rows.append(output_row)
+
+    # 印出表頭
+    print("\t".join(columns))
+    # 印出每一行
+    for row in output_rows:
+        print("\t".join(str(x) for x in row))
+

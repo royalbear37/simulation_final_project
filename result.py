@@ -15,7 +15,8 @@ def pretty_priority_align(names, priorities):
 
 def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
     if dispatch_rule.upper() == 'GA':
-        from dispatch_ga import run_ga_for_area, ETCH_machines, PHOTO_machines, TF_machines
+        from dispatch_ga import run_ga_for_area
+        from machine import ETCH_machines, PHOTO_machines, TF_machines
         # 步驟1：先用 LIFO 找 allocation
         first_allocation, _ = run_gene(total_staff, sim_time, ga_replacement)
         e_staff, p_staff, t_staff = first_allocation
@@ -57,7 +58,7 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         best_allocation, idle = run_gene(total_staff, sim_time, dispatch_rule)
         e_staff, p_staff, t_staff = best_allocation
         ga_priority_list = None
-        from dispatch_ga import ETCH_machines, PHOTO_machines, TF_machines
+        from machine import ETCH_machines, PHOTO_machines, TF_machines
         e_idle = simulate_idle_time(ETCH_machines, e_staff, sim_time, dispatch_rule=dispatch_rule)
         p_idle = simulate_idle_time(PHOTO_machines, p_staff, sim_time, dispatch_rule=dispatch_rule)
         t_idle = simulate_idle_time(TF_machines, t_staff, sim_time, dispatch_rule=dispatch_rule)

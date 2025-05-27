@@ -1,12 +1,11 @@
 import heapq
 from collections import deque
 
-
 def _simulate_assign_events(area_machines, num_staff, simulation_time, dispatch_rule, ga_priority):
     """
     只回傳 assign events，不印也不計算 idle time
     """
-    from simulation import ETCH_machines, PHOTO_machines, TF_machines
+    from machine import ETCH_machines, PHOTO_machines, TF_machines
 
     wait_start_dict = {}
     load_start_dict = {}
@@ -102,7 +101,7 @@ def simulate_best_allocation_events(allocation, sim_time, dispatch_rule='FIFO', 
     回傳: {'ETCH': [...], 'PHOTO': [...], 'TF': [...]}
     """
 
-    from simulation import ETCH_machines, PHOTO_machines, TF_machines
+    from machine import ETCH_machines, PHOTO_machines, TF_machines
 
     events = {}
     if dispatch_rule.upper() == 'GA' and ga_priority_list is not None:

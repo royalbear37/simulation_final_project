@@ -97,7 +97,7 @@ def run_gene(total_staff, sim_time, dispatch_rule, ga_priority_list=None):
     best_outputs = [np.max(pop_fit)]
     mean_outputs = [np.mean(pop_fit)]
 
-    for i in range(NUM_ITERATION):
+    for _ in range(NUM_ITERATION):
         parent = selection(pop, pop_fit)
         offspring = crossover_uniform(parent)
         mutation(offspring)

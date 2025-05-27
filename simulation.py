@@ -1,5 +1,7 @@
 import heapq
 from collections import deque
+from machine import ETCH_machines, PHOTO_machines, TF_machines
+
 
 def simulate_idle_time(area_machines, num_staff, simulation_time, dispatch_rule='fifo', ga_priority=None):
     """
@@ -104,22 +106,22 @@ def simulate_idle_time(area_machines, num_staff, simulation_time, dispatch_rule=
 # TF_machines = [(f"DU_{i}", 60, 4) for i in range(1, 6)]
 
 
-ETCH_machines = [("PR_1", 60, 3), ("PR_2", 60, 3)] + \
-    [(f"DA_{i}", 17, 3) for i in range(1, 9)] + \
-    [(f"85_{i}", 80, 2) for i in range(1, 4)] + \
-    [(f"DP_{i}", 50, 2) for i in range(1, 5)]
+# ETCH_machines = [("PR_1", 60, 3), ("PR_2", 60, 3)] + \
+#     [(f"DA_{i}", 17, 3) for i in range(1, 9)] + \
+#     [(f"85_{i}", 80, 2) for i in range(1, 4)] + \
+#     [(f"DP_{i}", 50, 2) for i in range(1, 5)]
 
-PHOTO_machines = [(f"DA_{i}", 17, 3) for i in range(9, 14)] + \
-    [("PR_3", 60, 3)] + [(f"94_{i}", 120, 2) for i in range(1, 8)] + \
-    [("DA_1", 50, 3)] + [(f"DD_{i}", 50, 2) for i in range(1, 5)] + \
-    [(f"HM_{i}", 10, 2) for i in range(1, 3)] + [("UM_1", 10, 2)]
+# PHOTO_machines = [(f"DA_{i}", 17, 3) for i in range(9, 14)] + \
+#     [("PR_3", 60, 3)] + [(f"94_{i}", 120, 2) for i in range(1, 8)] + \
+#     [("DA_1", 50, 3)] + [(f"DD_{i}", 50, 2) for i in range(1, 5)] + \
+#     [(f"HM_{i}", 10, 2) for i in range(1, 3)] + [("UM_1", 10, 2)]
 
-TF_machines = [(f"DU_{i}", 60, 4) for i in range(1, 3)] + \
-    [(f"MX_{i}", 30, 2) for i in range(1, 7)] + \
-    [(f"DR_{i}", 60, 2) for i in range(1, 4)] + \
-    [(f"85_{i}", 90, 2) for i in range(4, 7)] + \
-    [("ST_1", 44, 2)] + [(f"85A_{i}", 72, 2) for i in range(1, 3)] + \
-    [("PR_4", 60, 3)]
+# TF_machines = [(f"DU_{i}", 60, 4) for i in range(1, 3)] + \
+#     [(f"MX_{i}", 30, 2) for i in range(1, 7)] + \
+#     [(f"DR_{i}", 60, 2) for i in range(1, 4)] + \
+#     [(f"85_{i}", 90, 2) for i in range(4, 7)] + \
+#     [("ST_1", 44, 2)] + [(f"85A_{i}", 72, 2) for i in range(1, 3)] + \
+#     [("PR_4", 60, 3)]
 
 def total_idle_time(allocation, sim_time, dispatch_rule='FIFO', ga_priority_list=None):
     if ga_priority_list is not None:

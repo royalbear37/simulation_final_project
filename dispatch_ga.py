@@ -1,7 +1,8 @@
 import numpy as np
-from simulation import simulate_idle_time, ETCH_machines, PHOTO_machines, TF_machines
+from simulation import simulate_idle_time
+from machine import ETCH_machines, PHOTO_machines, TF_machines
 
-def run_ga_for_area(area_machines, num_staff, sim_time, num_chrome=30, num_iter=100, Pc=0.85, Pm=0.15):
+def run_ga_for_area(area_machines, num_staff, sim_time, num_chrome=30, num_iter=100, Pc=0.75, Pm=0.25):
     """
     對指定機台區域執行 GA 最佳化，最小化 idle time。
     - area_machines: List of (name, proc_time, load_time)
