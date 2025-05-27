@@ -100,10 +100,7 @@ def simulate_idle_time(area_machines, num_staff, simulation_time, dispatch_rule=
 
 # ========== 區域與機台設定 ==========
 
-#測試用 簡單易讀
-# ETCH_machines = [(f"DA_{i}", 17, 3) for i in range(1, 6)]
-# PHOTO_machines = [(f"DB_{i}", 17, 3) for i in range(1, 5)]
-# TF_machines = [(f"DU_{i}", 60, 4) for i in range(1, 6)]
+
 
 
 # ETCH_machines = [("PR_1", 60, 3), ("PR_2", 60, 3)] + \

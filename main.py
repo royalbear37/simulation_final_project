@@ -1,6 +1,7 @@
 # main.py
 from machine import query2
 from result import result, compare_results_by_area 
+from machine import write_to_oracle
 
 if __name__ == "__main__":
     
@@ -32,7 +33,6 @@ if __name__ == "__main__":
 
         results = [res1, res2, res3, res4, res5, res6]
         best = compare_results_by_area(results)
-
         output_row = [
             instance,
             best.get("total_idle", ""),                       # average_idle_time
@@ -40,14 +40,20 @@ if __name__ == "__main__":
             best["PHOTO"]["staff"],                           # staff_in_area2
             best["TF"]["staff"],                              # staff_in_area3           
             best["ETCH"]["dispatch_rule"],     # dispatch_in_area1               
-            best["TF"]["dispatch_rule"],      # dispatch_in_area2               
             best["PHOTO"]["dispatch_rule"],    # dispatch_in_area3                                      
+            best["TF"]["dispatch_rule"],      # dispatch_in_area2               
         ]
         output_rows.append(output_row)
+
+    print(output_rows)
+
+    write_to_oracle(output_rows)
 
     # 印出表頭
     print("\t".join(columns))
     # 印出每一行
     for row in output_rows:
         print("\t".join(str(x) for x in row))
+
+
 
