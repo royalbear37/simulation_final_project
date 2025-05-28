@@ -49,11 +49,15 @@ if __name__ == "__main__":
 
     write_to_oracle(output_rows)
 
-    # 印出表頭
-    print("\t".join(columns))
+    # 印出表頭（每欄寬度 18）
+    print("{:<10}{:<18}{:<15}{:<15}{:<15}{:<18}{:<18}{:<18}".format(
+        "instance", "average_idle_time", "staff_in_area1", "staff_in_area2", "staff_in_area3",
+        "dispatch_in_area1", "dispatch_in_area2", "dispatch_in_area3"
+    ))
+
     # 印出每一行
     for row in output_rows:
-        print("\t".join(str(x) for x in row))
+        print("{:<10}{:<18}{:<15}{:<15}{:<15}{:<18}{:<18}{:<18}".format(*row))
 
 
 

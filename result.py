@@ -136,12 +136,12 @@ def compare_results_by_area(results):
         t_idle = combo[2]['idle_time']
         total_idle = e_idle + p_idle + t_idle
         if total_idle < min_total_idle:
-            print("="*40)
-            print(f"新最佳組合！total_idle: {total_idle}")
-            print(f"  allocation: {allocation}")
-            print(f"  dispatch_rules: {dispatch_rules}")
-            print(f"  各區 idle: ETCH={e_idle}, PHOTO={p_idle}, TF={t_idle}")
-            print("="*40)
+            # print("="*40)
+            # print(f"新最佳組合！total_idle: {total_idle}")
+            # print(f"  allocation: {allocation}")
+            # print(f"  dispatch_rules: {dispatch_rules}")
+            # print(f"  各區 idle: ETCH={e_idle}, PHOTO={p_idle}, TF={t_idle}")
+            # print("="*40)
             min_total_idle = total_idle
             best_combo = combo
             best = {
