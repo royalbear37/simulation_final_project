@@ -47,9 +47,9 @@ PHOTO_machines = [(d["machine"], d["processing_time"], d["load_unload_time"]) fo
 TF_machines = [(d["machine"], d["processing_time"], d["load_unload_time"]) for d in layout["1"]["TF"]]
 
 #測試用 簡單易讀
-# ETCH_machines = [(f"DA_{i}", 17, 3) for i in range(1, 6)]
-# PHOTO_machines = [(f"DB_{i}", 17, 3) for i in range(1, 5)]
-# TF_machines = [(f"DU_{i}", 60, 4) for i in range(1, 6)]
+# ETCH_machines = [(f"ETCH_{i}", 17, 3) for i in range(1, 17)]
+# PHOTO_machines = [(f"PHOTO_{i}", 17, 3) for i in range(1, 19)]
+# TF_machines = [(f"TF_{i}", 30, 4) for i in range(1, 19)]
 
 #寫入oracle
 def write_to_oracle(results):

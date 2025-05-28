@@ -28,7 +28,7 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         ga_priority_list = [e_priority, p_priority, t_priority]
 
         # 步驟3：用這組 priority 再用 gene 找 allocation（這次 gene 評分時要帶入 ga_priority_list）
-        best_allocation, _ = run_gene(total_staff, sim_time, 'LIFO', ga_priority_list=ga_priority_list)
+        best_allocation, _ = run_gene(total_staff, sim_time, 'GA', ga_priority_list=ga_priority_list)
         e_staff, p_staff, t_staff = best_allocation
 
         # 步驟4：用 best_allocation + ga_priority_list 計算 idle time
@@ -45,6 +45,16 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         # print(f"ETCH 區域的閒置時間：{e_idle}, PHOTO 區域的閒置時間：{p_idle}, TF 區域的閒置時間：{t_idle}")
         # print(f"總閒置時間：{total_idle}")
         # print("="*40)
+        # 顯示各區域的分配事件
+        # events = simulate_best_allocation_events(
+        #     best_allocation, sim_time, dispatch_rule=dispatch_rule,
+        #     ga_priority_list=ga_priority_list if dispatch_rule.upper() == 'GA' else None
+        # )
+        # print("=== 各區域分配事件 ===")
+        # for area, evlist in events.items():
+        #     print(f"{area:<5} 區域：")
+        #     for e in evlist:
+        #         print(f"  時間 {e['assign_time']:>5}: 機台 {e['machine']:<8}，等待時間 {e['wait_time']:>3}")
         return {
             "dispatch_rule": dispatch_rule.upper(),
             "ga_replacement": ga_replacement.upper() if ga_replacement else None,
@@ -153,7 +163,7 @@ def compare_results_by_area(results):
                     "staff": allocation[2],
                     "idle_time": t_idle
                 },
-                'total_idle': total_idle,
+                'total_idle': round(total_idle/55, 4),
                 'allocation': allocation
             }
 

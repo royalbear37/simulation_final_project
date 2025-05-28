@@ -88,12 +88,14 @@ def simulate_idle_time(area_machines, num_staff, simulation_time, dispatch_rule=
                     wait_start = simulate_idle_time.wait_start_dict.pop(mname)
                     wait_time = max(0, assign_time - wait_start)
                 proc_done = now + m['proc']
-                if proc_done <= simulation_time:
-                    heapq.heappush(event_queue, (proc_done, 'done', mname))
+                heapq.heappush(event_queue, (proc_done, 'done', mname))
                 staff_available += 1
 
         # 在處理完當前時間點所有事件後，再做一次 assign
         assign_waiting(now)
+
+    for wait_start, wait_mname in waiting_queue:
+        idle_time_total += max(0, simulation_time - wait_start)
 
     return idle_time_total
 

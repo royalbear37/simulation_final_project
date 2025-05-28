@@ -45,7 +45,7 @@ if __name__ == "__main__":
         ]
         output_rows.append(output_row)
 
-    print(output_rows)
+    # print(output_rows)
 
     write_to_oracle(output_rows)
 
