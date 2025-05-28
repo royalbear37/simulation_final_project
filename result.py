@@ -94,55 +94,67 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
 
 
 def compare_results_by_area(results):
-    """
-    results: List[result() 回傳的 dict]
-    回傳每區域 idle time 最小的那個 result（只要該區 staff 數一樣即可比）
-    若三區都沒有人數一樣，則回傳總 idle time 最小的那個 result
-    """
+    import itertools
     areas = ['ETCH', 'PHOTO', 'TF']
-    best = {}
-    found = False
 
+    area_choices = []
     for area in areas:
-        # 找出所有該區 staff 數一樣的 result
-        staff_to_results = {}
+        choices = []
         for res in results:
-            staff = res[area]['staff']
-            staff_to_results.setdefault(staff, []).append(res)
-        # 如果有超過一個 result staff 數一樣，挑 idle time 最小的
-        best_idle = None
-        best_res = None
-        for staff, res_list in staff_to_results.items():
-            if len(res_list) > 1:
-                found = True
-                min_res = min(res_list, key=lambda x: x[area]['idle_time'])
-                if (best_idle is None) or (min_res[area]['idle_time'] < best_idle):
-                    best_idle = min_res[area]['idle_time']
-                    best_res = min_res
-        if best_res:
-            best[area] = {
-                "dispatch_rule": best_res['dispatch_rule'],
-                "ga_replacement": best_res.get('ga_replacement', None),
-                "staff": best_res[area]['staff'],
-                "idle_time": best_res[area]['idle_time']
-            }
-        else:
-            best[area] = None
+            choices.append({
+                "dispatch_rule": res['dispatch_rule'],
+                "ga_replacement": res.get('ga_replacement', None),
+                "staff": res[area]['staff'],
+                "idle_time": res[area]['idle_time'],
+                "allocation": res['allocation']
+            })
+        area_choices.append(choices)
 
-    # 如果三區都沒有 staff 一樣的，就回傳總 idle time 最小的那個
-    if not found:
-        min_res = min(results, key=lambda x: x['total_idle'])
-        for area in areas:
-            best[area] = {
-                "dispatch_rule": min_res['dispatch_rule'],
-                "ga_replacement": min_res.get('ga_replacement', None),
-                "staff": min_res[area]['staff'],
-                "idle_time": min_res[area]['idle_time']
+    best = None
+    min_total_idle = float('inf')
+    best_combo = None
+
+    total_staff_sum = sum(results[0]['allocation'])
+
+    for combo in itertools.product(*area_choices):
+        allocation = [combo[0]['staff'], combo[1]['staff'], combo[2]['staff']]
+        if sum(allocation) != total_staff_sum:
+            continue  # 跳過人數不符的組合
+        dispatch_rules = [combo[0]['dispatch_rule'], combo[1]['dispatch_rule'], combo[2]['dispatch_rule']]
+        e_idle = combo[0]['idle_time']
+        p_idle = combo[1]['idle_time']
+        t_idle = combo[2]['idle_time']
+        total_idle = e_idle + p_idle + t_idle
+        if total_idle < min_total_idle:
+            print("="*40)
+            print(f"新最佳組合！total_idle: {total_idle}")
+            print(f"  allocation: {allocation}")
+            print(f"  dispatch_rules: {dispatch_rules}")
+            print(f"  各區 idle: ETCH={e_idle}, PHOTO={p_idle}, TF={t_idle}")
+            print("="*40)
+            min_total_idle = total_idle
+            best_combo = combo
+            best = {
+                'ETCH': {
+                    "dispatch_rule": dispatch_rules[0],
+                    "ga_replacement": combo[0]['ga_replacement'],
+                    "staff": allocation[0],
+                    "idle_time": e_idle
+                },
+                'PHOTO': {
+                    "dispatch_rule": dispatch_rules[1],
+                    "ga_replacement": combo[1]['ga_replacement'],
+                    "staff": allocation[1],
+                    "idle_time": p_idle
+                },
+                'TF': {
+                    "dispatch_rule": dispatch_rules[2],
+                    "ga_replacement": combo[2]['ga_replacement'],
+                    "staff": allocation[2],
+                    "idle_time": t_idle
+                },
+                'total_idle': total_idle,
+                'allocation': allocation
             }
-        best['total_idle'] = min_res['total_idle']
-        best['allocation'] = min_res['allocation']
-        best['msg'] = "三區都沒有人數一樣，回傳總 idle time 最小的結果"
-    else:
-        # 也可以加總 idle time
-        best['total_idle'] = sum(b['idle_time'] for b in best.values() if b)
+
     return best
