@@ -1,6 +1,8 @@
 from gene import run_gene
 from event import simulate_best_allocation_events
 from simulation import simulate_idle_time
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 
@@ -58,6 +60,7 @@ def result(total_staff, sim_time, dispatch_rule, ga_replacement=None):
         return {
             "dispatch_rule": dispatch_rule.upper(),
             "ga_replacement": ga_replacement.upper() if ga_replacement else None,
+            "ga_priority": [e_priority, p_priority, t_priority],
             "ETCH": {"staff": e_staff, "idle_time": e_idle},
             "PHOTO": {"staff": p_staff, "idle_time": p_idle},
             "TF": {"staff": t_staff, "idle_time": t_idle},
@@ -111,12 +114,19 @@ def compare_results_by_area(results):
     for area in areas:
         choices = []
         for res in results:
+            # 新增: 若是GA，帶入該區priority
+            priority = None
+            if res['dispatch_rule'] == 'GA' and 'ga_priority' in res:
+                # res['ga_priority'] 是 [e_priority, p_priority, t_priority]
+                idx = areas.index(area)
+                priority = res['ga_priority'][idx]
             choices.append({
                 "dispatch_rule": res['dispatch_rule'],
                 "ga_replacement": res.get('ga_replacement', None),
                 "staff": res[area]['staff'],
                 "idle_time": res[area]['idle_time'],
-                "allocation": res['allocation']
+                "allocation": res['allocation'],
+                "ga_priority": priority
             })
         area_choices.append(choices)
 
@@ -136,12 +146,6 @@ def compare_results_by_area(results):
         t_idle = combo[2]['idle_time']
         total_idle = e_idle + p_idle + t_idle
         if total_idle < min_total_idle:
-            # print("="*40)
-            # print(f"新最佳組合！total_idle: {total_idle}")
-            # print(f"  allocation: {allocation}")
-            # print(f"  dispatch_rules: {dispatch_rules}")
-            # print(f"  各區 idle: ETCH={e_idle}, PHOTO={p_idle}, TF={t_idle}")
-            # print("="*40)
             min_total_idle = total_idle
             best_combo = combo
             best = {
@@ -149,22 +153,119 @@ def compare_results_by_area(results):
                     "dispatch_rule": dispatch_rules[0],
                     "ga_replacement": combo[0]['ga_replacement'],
                     "staff": allocation[0],
-                    "idle_time": e_idle
+                    "idle_time": e_idle,
+                    "ga_priority": combo[0].get('ga_priority', None)
                 },
                 'PHOTO': {
                     "dispatch_rule": dispatch_rules[1],
                     "ga_replacement": combo[1]['ga_replacement'],
                     "staff": allocation[1],
-                    "idle_time": p_idle
+                    "idle_time": p_idle,
+                    "ga_priority": combo[1].get('ga_priority', None)
                 },
                 'TF': {
                     "dispatch_rule": dispatch_rules[2],
                     "ga_replacement": combo[2]['ga_replacement'],
                     "staff": allocation[2],
-                    "idle_time": t_idle
+                    "idle_time": t_idle,
+                    "ga_priority": combo[2].get('ga_priority', None)
                 },
                 'total_idle': round(total_idle/55, 4),
                 'allocation': allocation
             }
 
     return best
+
+
+
+def plot_gantt(best_combo, sim_time):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'sans-serif']
+    matplotlib.rcParams['axes.unicode_minus'] = False
+
+    from machine import ETCH_machines, PHOTO_machines, TF_machines
+    from event import _simulate_assign_events
+
+    area_map = {
+        'ETCH': ETCH_machines,
+        'PHOTO': PHOTO_machines,
+        'TF': TF_machines
+    }
+
+    for area in ['ETCH', 'PHOTO', 'TF']:
+        area_info = best_combo[area]
+        machines = area_map[area]
+        staff = area_info['staff']
+        dispatch_rule = area_info['dispatch_rule']
+        ga_priority = area_info.get('ga_priority', None)
+
+        print(f"處理 {area} 區域，分配人數: {staff}, dispatch_rule: {dispatch_rule}, ga_priority: {ga_priority}")
+
+        events = _simulate_assign_events(
+            machines, staff, sim_time, dispatch_rule, ga_priority
+        )
+
+        # 依機台分組
+        machine_events = {}
+        for e in events:
+            m = str(e['machine'])
+            machine_events.setdefault(m, []).append(e)
+        # 依 assign_time 排序
+        for evlist in machine_events.values():
+            evlist.sort(key=lambda x: x['assign_time'])
+
+        # 畫所有機台
+        # machine_names = sorted(list(machine_events.keys()))
+        machine_names = [str(m[0]) for m in machines]
+
+        fig, ax = plt.subplots(figsize=(16, max(4, len(machine_names)*0.7)))
+        yticks = []
+        yticklabels = []
+        y = 0
+
+        for mname in machine_names:
+            evlist = machine_events.get(mname, [])
+            evlist.sort(key=lambda x: x['assign_time'])
+            for m in machines:
+                if str(m[0]) == mname:
+                    init_done = m[1] 
+                    proc = m[1]
+                    load = m[2]
+                    break
+            if not evlist:
+                ax.barh(y, init_done, left=0, color='gray', edgecolor='black', alpha=0.7, height=0.6)
+                ax.barh(y, sim_time - init_done, left=init_done, color='red', edgecolor='black', alpha=0.7, height=0.6)
+            else:
+                if init_done > 0:
+                    ax.barh(y, init_done, left=0, color='gray', edgecolor='black', alpha=0.7, height=0.6)
+                last_done = init_done
+                for e in evlist:
+                    assign = e['assign_time']
+                    if assign > last_done:
+                        ax.barh(y, assign - last_done, left=last_done, color='red', edgecolor='black', alpha=0.7, height=0.6)
+                    if assign + proc + load <= sim_time:
+                        ax.barh(y, proc + load, left=assign, color='gray', edgecolor='black', alpha=0.7, height=0.6)
+                        last_done = assign + proc + load
+                    else:
+                        end = sim_time - assign
+                        ax.barh(y, end, left=assign, color='gray', edgecolor='black', alpha=0.7, height=0.6)
+                        last_done = sim_time
+                if last_done < sim_time:
+                    ax.barh(y, sim_time - last_done, left=last_done, color='red', edgecolor='black', alpha=0.7, height=0.6)
+            yticks.append(y)
+            yticklabels.append(mname)
+            y += 1
+
+        ax.set_yticks(yticks)
+        ax.set_yticklabels(yticklabels, fontsize=14)
+        ax.set_xlabel("Time", fontsize=16)
+        ax.set_title(f"Gantt Chart - {area} area", fontsize=18)
+        ax.tick_params(axis='x', labelsize=14)
+        ax.grid(True, axis='x', linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        plt.show()
+
+
+
+
