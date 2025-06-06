@@ -200,7 +200,6 @@ def plot_gantt(best_combo, sim_time):
         dispatch_rule = area_info['dispatch_rule']
         ga_priority = area_info.get('ga_priority', None)
 
-        print(f"處理 {area} 區域，分配人數: {staff}, dispatch_rule: {dispatch_rule}, ga_priority: {ga_priority}")
 
         events = _simulate_assign_events(
             machines, staff, sim_time, dispatch_rule, ga_priority
@@ -260,7 +259,7 @@ def plot_gantt(best_combo, sim_time):
         ax.set_yticks(yticks)
         ax.set_yticklabels(yticklabels, fontsize=14)
         ax.set_xlabel("Time", fontsize=16)
-        ax.set_title(f"Gantt Chart - {area} area", fontsize=18)
+        ax.set_title(f"Gantt Chart - {staff} staffs - {area} area - {dispatch_rule}", fontsize=18)
         ax.tick_params(axis='x', labelsize=14)
         ax.grid(True, axis='x', linestyle='--', alpha=0.5)
         plt.tight_layout()

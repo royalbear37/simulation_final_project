@@ -1,7 +1,8 @@
 # main.py
 from machine import query2
-from result import result, compare_results_by_area 
+from result import result, compare_results_by_area, plot_gantt
 from machine import write_to_oracle
+
 
 if __name__ == "__main__":
     
@@ -33,6 +34,7 @@ if __name__ == "__main__":
 
         results = [res1, res2, res3, res4, res5, res6]
         best = compare_results_by_area(results)
+        plot_gantt(best, sim_time)
         output_row = [
             instance,
             best.get("total_idle", ""),                       # average_idle_time
@@ -47,7 +49,7 @@ if __name__ == "__main__":
 
     # print(output_rows)
 
-    write_to_oracle(output_rows)
+    # write_to_oracle(output_rows)
 
     # 印出表頭（每欄寬度 18）
     print("{:<10}{:<18}{:<15}{:<15}{:<15}{:<18}{:<18}{:<18}".format(
@@ -59,5 +61,5 @@ if __name__ == "__main__":
     for row in output_rows:
         print("{:<10}{:<18}{:<15}{:<15}{:<15}{:<18}{:<18}{:<18}".format(*row))
 
-
+    
 
